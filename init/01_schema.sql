@@ -36,9 +36,10 @@ CREATE TABLE IF NOT EXISTS media_items (
     prompt      TEXT NOT NULL DEFAULT '',
     file_url    TEXT NOT NULL DEFAULT '',
     metadata    JSONB NOT NULL DEFAULT '{}',
-    output_spec JSONB,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    output_spec  JSONB,
+    is_favourite BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS ix_media_items_clip_id    ON media_items(clip_id);
@@ -105,4 +106,7 @@ INSERT INTO alembic_version (version_num)
     ON CONFLICT DO NOTHING;
 INSERT INTO alembic_version (version_num)
     VALUES ('0002')
+    ON CONFLICT DO NOTHING;
+INSERT INTO alembic_version (version_num)
+    VALUES ('0003')
     ON CONFLICT DO NOTHING;
