@@ -9,6 +9,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
       - ./init:/docker-entrypoint-initdb.d:ro
+      - ./scripts:/scripts:ro
     ports:
       # Bind to localhost only — use firewall / SSH tunnel / Tailscale
       # to allow the app server in. Change to "0.0.0.0:5432:5432" only
