@@ -21,30 +21,53 @@ CREATE TABLE IF NOT EXISTS prompt_templates (
 );
 
 CREATE TABLE IF NOT EXISTS clip_prompts (
-    id          UUID PRIMARY KEY,
-    name        TEXT NOT NULL DEFAULT '',
-    metadata    JSONB NOT NULL DEFAULT '{}',
-    style       JSONB NOT NULL DEFAULT '{}',
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    id                  UUID PRIMARY KEY,
+    name                TEXT NOT NULL DEFAULT '',
+    metadata            JSONB NOT NULL DEFAULT '{}',
+    style               JSONB NOT NULL DEFAULT '{}',
+    media_refs          JSONB NOT NULL DEFAULT '{"images":[],"ai_videos":[],"audios":[]}',
+    render_output_urls  JSONB NOT NULL DEFAULT '[]',
+    is_dirty            BOOLEAN NOT NULL DEFAULT FALSE,
+    finished_at         TIMESTAMPTZ NULL,
+    thumbnail_url       TEXT NULL,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS media_items (
-    id          UUID PRIMARY KEY,
-    clip_id     UUID REFERENCES clip_prompts(id) ON DELETE SET NULL,
-    type        TEXT NOT NULL,
-    prompt      TEXT NOT NULL DEFAULT '',
-    file_url    TEXT NOT NULL DEFAULT '',
-    metadata    JSONB NOT NULL DEFAULT '{}',
-    output_spec  JSONB,
-    is_favourite BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+    id               UUID PRIMARY KEY,
+    clip_id          UUID REFERENCES clip_prompts(id) ON DELETE SET NULL,
+    type             TEXT NOT NULL,
+    prompt           TEXT NOT NULL DEFAULT '',
+    file_url         TEXT NOT NULL DEFAULT '',
+    metadata         JSONB NOT NULL DEFAULT '{}',
+    output_spec      JSONB,
+    is_favourite     BOOLEAN NOT NULL DEFAULT FALSE,
+    name             TEXT NOT NULL DEFAULT '',
+    pipeline_run_id  UUID NULL,
+    scene_id         TEXT NULL,
+    parent_media_id  UUID NULL REFERENCES media_items(id) ON DELETE SET NULL,
+    role             TEXT NULL,
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS ix_media_items_clip_id    ON media_items(clip_id);
-CREATE INDEX IF NOT EXISTS ix_media_items_type       ON media_items(type);
-CREATE INDEX IF NOT EXISTS ix_media_items_created_at ON media_items(created_at DESC);
+CREATE INDEX IF NOT EXISTS ix_media_items_clip_id            ON media_items(clip_id);
+CREATE INDEX IF NOT EXISTS ix_media_items_type               ON media_items(type);
+CREATE INDEX IF NOT EXISTS ix_media_items_created_at         ON media_items(created_at DESC);
+CREATE INDEX IF NOT EXISTS ix_media_items_pipeline_run_id    ON media_items(pipeline_run_id);
+CREATE INDEX IF NOT EXISTS ix_media_items_scene_id           ON media_items(scene_id);
+CREATE INDEX IF NOT EXISTS ix_media_items_name               ON media_items(name);
+CREATE INDEX IF NOT EXISTS ix_media_items_pipeline_scene_type ON media_items(pipeline_run_id, scene_id, type);
+
+-- System prompts (migration 0004)
+
+CREATE TABLE IF NOT EXISTS system_prompts (
+    id          TEXT PRIMARY KEY,
+    content     TEXT NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
 -- Series / Characters / Episodes / VoiceSnippets (migration 0002)
 
@@ -109,4 +132,10 @@ INSERT INTO alembic_version (version_num)
     ON CONFLICT DO NOTHING;
 INSERT INTO alembic_version (version_num)
     VALUES ('0003')
+    ON CONFLICT DO NOTHING;
+INSERT INTO alembic_version (version_num)
+    VALUES ('0004')
+    ON CONFLICT DO NOTHING;
+INSERT INTO alembic_version (version_num)
+    VALUES ('0005')
     ON CONFLICT DO NOTHING;
