@@ -48,6 +48,8 @@ CREATE TABLE IF NOT EXISTS media_items (
     scene_id         TEXT NULL,
     parent_media_id  UUID NULL REFERENCES media_items(id) ON DELETE SET NULL,
     role             TEXT NULL,
+    file_data        BYTEA  NULL,
+    file_mime_type   TEXT   NULL,
     created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -138,4 +140,7 @@ INSERT INTO alembic_version (version_num)
     ON CONFLICT DO NOTHING;
 INSERT INTO alembic_version (version_num)
     VALUES ('0005')
+    ON CONFLICT DO NOTHING;
+INSERT INTO alembic_version (version_num)
+    VALUES ('0006')
     ON CONFLICT DO NOTHING;
